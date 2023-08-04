@@ -24,8 +24,8 @@ temp2022 <- download_daymet_batch(
 
 # Calculate cumulative DDs for each site in farenheith
 
-upperT <- c_to_f(30)
-lowerT <- c_to_f(5.5)
+upperT <- c_to_f(31)
+lowerT <- c_to_f(10)
 
 tmax2022 <- as.numeric(unlist(lapply(temp2022, function(x) c_to_f(x$data[7]))))
 tmin2022 <- as.numeric(unlist(lapply(temp2022, function(x) c_to_f(x$data[8]))))
@@ -43,8 +43,27 @@ for(i in 1: length(locations2022$Site)) {
 
 DDs2022 <- data.frame(site = rep(locations2022$Site, each = 365), DDs = DDs2022, julian  = rep(seq(1, 365), length(locations2022$Site)))
 
-# assign DDs to each site and julian date in datset\
+# assign DDs to each site and julian date in the datset
+
+aphids2022A$DDs <- rep(NA, length(aphids2022A[, 1]))
+
+for(i in 1: length(locations2022$Site)){
+  aphids2022A$DDs[which(aphids2022A$Site == locations2022$Site[i])] <- DDs2022$DDs[which((DDs2022$site == locations2022$Site[i]) & 
+                                                                                  (DDs2022$julian %in% 
+                                                                                     aphids2022A$julian[which(aphids2022A$Site == locations2022$Site[i])]))]
+}
 
 
+aphids2022A$propT <- aphids2022A$Aphids / sum(aphids2022A$Aphids)
+plot(aphids2022A$DDs[order(aphids2022A$DDs)], cumsum(aphids2022A$propT[order(aphids2022A$DDs)]))
 
+
+aphids2022A$prop <- rep(NA, length(aphids2022A[, 1]))
+for(i in 1: length(locations2022$Site)){
+  aphids2022A$prop[which(aphids2022A$Site == locations2022$Site[i])] <- cumsum(aphids2022A$Aphids[which(aphids2022A$Site == locations2022$Site[i])]) / sum(aphids2022A$Aphids[which(aphids2022A$Site == locations2022$Site[i])])
+}
+
+plot(aphids2022A$DDs, aphids2022A$prop)
+
+# 
 
