@@ -30,54 +30,21 @@ lowerT <- c_to_f(5.5)
 tmax2022 <- as.numeric(unlist(lapply(temp2022, function(x) c_to_f(x$data[7]))))
 tmin2022 <- as.numeric(unlist(lapply(temp2022, function(x) c_to_f(x$data[8]))))
 
-seq()
-
-hells_gate <- cumsum(calc_dd_vec(tmax = tmax2022[1:365], tmin = tmax2022[1:365], 
-                                 lower_threshold = lowerT, upper_threshold = upperT, 
-                                 cutoff = "horizontal"))
-
-NJ_landing <- cumsum(calc_dd_vec(tmax = tmax2022[366:730], tmin = tmax2022[366:730], 
-                                 lower_threshold = lowerT, upper_threshold = upperT, 
-                                 cutoff = "horizontal"))
+ind <- seq(1, length(tmax2022), 365)
 
 
-NJ_canyon <- cumsum(calc_dd_vec(tmax = tmax2022[731:1095], tmin = tmax2022[732:1095], 
-                                 lower_threshold = lowerT, upper_threshold = upperT, 
-                                 cutoff = "horizontal"))
+DDs2022 <- rep(NA, length(tmax2022))
+
+for(i in 1: length(locations2022$Site)) {
+  DDs2022[ind[i]: (ind[i] + 364)] <- cumsum(calc_dd_vec(tmax = tmax2022[ind[i]: (ind[i] + 364)], tmin = tmax2022[ind[i]: (ind[i] + 364)], 
+                                                        lower_threshold = lowerT, upper_threshold = upperT, 
+                                                        cutoff = "horizontal"))
+}
+
+DDs2022 <- data.frame(site = rep(locations2022$Site, each = 365), DDs = DDs2022, julian  = rep(seq(1, 365), length(locations2022$Site)))
+
+# assign DDs to each site and julian date in datset\
 
 
-alpowa_creek <- cumsum(calc_dd_vec(tmax = tmax2022[1096:1460], tmin = tmax2022[1098:1463], 
-                                lower_threshold = lowerT, upper_threshold = upperT, 
-                                cutoff = "horizontal"))
 
 
-wawawai_park <- cumsum(calc_dd_vec(tmax = tmax2022[1461:1825], tmin = tmax2022[1464:1829], 
-                                   lower_threshold = lowerT, upper_threshold = upperT, 
-                                   cutoff = "horizontal"))
-
-
-blyton_landing <- cumsum(calc_dd_vec(tmax = tmax2022[1826:2190], tmin = tmax2022[1830:2195], 
-                                   lower_threshold = lowerT, upper_threshold = upperT, 
-                                   cutoff = "horizontal"))
-
-
-rose_creek <- cumsum(calc_dd_vec(tmax = tmax2022[2191:2555], tmin = tmax2022[2196:2561], 
-                                     lower_threshold = lowerT, upper_threshold = upperT, 
-                                     cutoff = "horizontal"))
-
-sunshine_road <- cumsum(calc_dd_vec(tmax = tmax2022[2556:2920], tmin = tmax2022[2562:2927], 
-                                 lower_threshold = lowerT, upper_threshold = upperT, 
-                                 cutoff = "horizontal"))
-
-grimes_road <- cumsum(calc_dd_vec(tmax = tmax2022[2921:3293], tmin = tmax2022[2928:3293], 
-                                  lower_threshold = lowerT, upper_threshold = upperT, 
-                                  cutoff = "horizontal"))
-
-boyer_park <- cumsum(calc_dd_vec(tmax = tmax2022[3285:3659], tmin = tmax2022[3294:3659], 
-                                  lower_threshold = lowerT, upper_threshold = upperT, 
-                                  cutoff = "horizontal"))
-
-
-evans_pond <- cumsum(calc_dd_vec(tmax = tmax2022[3649:4025], tmin = tmax2022[3660:4025], 
-                                 lower_threshold = lowerT, upper_threshold = upperT, 
-                                 cutoff = "horizontal"))
