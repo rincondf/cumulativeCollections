@@ -63,7 +63,57 @@ for(i in 1: length(locations2022$Site)){
   aphids2022A$prop[which(aphids2022A$Site == locations2022$Site[i])] <- cumsum(aphids2022A$Aphids[which(aphids2022A$Site == locations2022$Site[i])]) / sum(aphids2022A$Aphids[which(aphids2022A$Site == locations2022$Site[i])])
 }
 
-plot(aphids2022A$DDs, aphids2022A$prop)
+aphids2022A$prop1 <- rep(NA, length(aphids2022A[, 1]))
+for(i in 1: length(locations2022$Site)){
+  aphids2022A$prop1[which(aphids2022A$Site == locations2022$Site[i])] <- (aphids2022A$Aphids[which(aphids2022A$Site == locations2022$Site[i])]) / sum(aphids2022A$Aphids[which(aphids2022A$Site == locations2022$Site[i])])
+}
 
-# 
 
+# parameter estimation by maximum likelihood
+
+require(bbmle)
+require(ExtDist)
+require(SuppDists)
+
+
+estimat <- function(DDs, prs, method){
+  LL1 <- function(gamma, delta, a, b) {
+    -sum(pr * log(dJohnsonSB_ab(x = x, gamma = gamma, delta = delta, a = a, b = b)))
+  }
+  
+  if(method == "L-BFGS-B"){
+    MLL <- mle2(LL1, start = list(gamma = -0.5, delta = 2, a = min(DDs) - 1, b = max(DDs) + 1), 
+                data = list(x = DDs, pr = prs),
+                lower = list(gamma = -Inf, delta = 0, a = -Inf, b = max(DDs)), 
+                upper = list(gamma = Inf, delta = Inf, a = min(DDs), b = Inf), method = "L-BFGS-B")
+  }
+  
+  if(method == "Nelder-Mead"){
+    MLL <- mle2(LL1, start = list(gamma = -0.5, delta = 2, a = min(DDs) - 1, b = max(DDs) + 1), 
+                data = list(x = DDs, pr = prs),
+                method = "Nelder-Mead")
+  }
+  
+  MLL
+}
+
+
+MLL1 <- estimat(DDs = aphids2022A$DDs, prs = aphids2022A$prop1, method = "L-BFGS-B")
+
+
+
+summary(MLL1)
+
+funres <- function(DDs){
+  xi = coef(MLL1)[3]
+  lambda = coef(MLL1)[4] - coef(MLL1)[3]
+  pJohnsonSB(DDs, gamma = coef(MLL1)[1],
+             delta = coef(MLL1)[2],
+             xi = xi,
+             lambda = lambda)
+}
+
+par(mar = c(5, 5, 2, 2) + 0.1)
+plot(aphids2022A$DDs, aphids2022A$prop, xlab = "Cumulative Degree Days", 
+     ylab = "Proportion captured", cex.lab = 2, cex.axis = 2, lwd = 2)
+curve(funres, from = 100, to = 5000, lwd = 2, add = TRUE, col = "blue")
